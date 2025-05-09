@@ -1,5 +1,6 @@
 import { Point } from "./point.js";
 
+new Point(1,1); 
 const canvas1 = document.getElementsByTagName("canvas")[0]!;
 const ctx1 = canvas1.getContext("2d")!;
 
