@@ -1,4 +1,4 @@
-import { Point } from "./point.js";
+import { Point } from "./utils.js";
 
 new Point(1,1); 
 const canvas1 = document.getElementsByTagName("canvas")[0]!;

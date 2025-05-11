@@ -1,4 +1,4 @@
-import { Point } from "./point.js";
+import { Point } from "./utils.js";
 
 const _2PI = Math.PI * 2
 
