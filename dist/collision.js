@@ -22,6 +22,7 @@ function setup() {
         }
     }
 }
+//ewee
 let lasttime = 0;
 let deltaTime = 0;
 function animate(curTime) {
