@@ -1,4 +1,4 @@
-import { Vector, randint, randomColor, _2Dobject } from "./utils.js";
+import { Vector, _2Dobject } from "./utils.js";
 // collision.html 
 window.addEventListener("resize", () => {
     _2Dobject.canvas.width = window.innerWidth;
@@ -7,22 +7,14 @@ window.addEventListener("resize", () => {
 const canvas = document.getElementById('c');
 const ctx = canvas.getContext('2d');
 _2Dobject.canvas = canvas;
+console.log();
 let balls = [];
 let ballcount = 2;
-let radius = 30;
+let radius = 50;
 function setup() {
-    while (balls.length < ballcount) {
-        let pos = new Vector(randint(30, canvas.width - 30), randint(30, canvas.height - 30));
-        if (!balls.some((ball) => {
-            let centerDistance = Vector.distance(pos, ball.pos);
-            return centerDistance < radius + ball.radius;
-        })) {
-            let vel = new Vector(randint(-300, 300), randint(-300, 300));
-            balls.push(new _2Dobject(pos, vel, radius, 2, randomColor()));
-        }
-    }
+    balls.push(new _2Dobject(new Vector(150, 150), new Vector(100, 100), 100, 100, "red"));
+    balls.push(new _2Dobject(new Vector(500, 500), new Vector(-100, 100), 100, 1, "blue"));
 }
-//ewee
 let lasttime = 0;
 let deltaTime = 0;
 function animate(curTime) {
@@ -31,20 +23,16 @@ function animate(curTime) {
     deltaTime = (curTime - lasttime) / 1000;
     lasttime = curTime;
     balls.forEach(b => {
-        b.update(deltaTime);
-        for (let ;;)
-            b.draw;
         for (let anotherBall of balls) {
             if (anotherBall !== b) {
-                ctx.beginPath();
-                ctx.moveTo(b.pos.x, b.pos.y);
-                ctx.lineTo(anotherBall.pos.x, anotherBall.pos.y);
-                ctx.stroke();
-                let d = Vector.distance(b.pos, anotherBall.pos);
-                ctx.font = "30px Arial";
-                ctx.strokeText(Math.round(d).toString(), 0, 25);
+                let d = Vector.distance(b.pos, anotherBall.pos) - b.radius - anotherBall.radius;
+                if (d <= 0) {
+                    _2Dobject.collisionResolution(b, anotherBall);
+                }
             }
         }
+        b.update(deltaTime);
+        b.draw();
     });
 }
 _2Dobject.canvas.width = window.innerWidth;

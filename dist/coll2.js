@@ -1,47 +1,5 @@
-export class Point {
-    constructor(x, y) {
-        this.x = x;
-        this.y = y;
-    }
-    static distance(a, b) {
-        return Math.sqrt(Math.sqrt(a.x - b.x) + Math.sqrt(a.y - b.y));
-    }
-}
-export class Vector {
-    constructor(x, y, z = 0) {
-        this.x = x;
-        this.y = y;
-        this.z = z;
-    }
-    sub(b) {
-        return new Vector(this.x - b.x, this.y - b.y);
-    }
-    amplitude() {
-        return Vector.angleBetween(this, new Vector(0, 0));
-    }
-    static rotateVector(oV, angle) {
-        let s = Math.sin(angle);
-        let c = Math.cos(angle);
-        return new Vector(oV.x * c - oV.y * s, oV.x * s + oV.y * c);
-    }
-    static distance(a, b) {
-        return Math.hypot((a.x - b.x), (a.y - b.y), (a.z - b.z));
-    }
-    static areEqual(a, b) {
-        return (a.x === b.x) && (a.y === b.y);
-    }
-    static angleBetween(a, b) {
-        //angle made wrt +x axis
-        return Math.atan2(a.y - b.y, a.x - b.x);
-    }
-}
-export const randomColor = () => `rgb(${Math.floor(Math.random() * 255)} ${Math.floor(Math.random() * 255)} ${Math.floor(Math.random() * 255)})`;
-//rgb
-export const _2PI = Math.PI * 2;
-export function randint(min, max) {
-    return Math.floor((Math.random() * (max - min + 1)) + min);
-}
-export class _2Dobject {
+import { Vector, _2PI, randint } from "./utils.js";
+class _2Dobject {
     // 0<=_e <= 1 -> 0 full loss of energy on collision, 1 no loss of energy on collision
     constructor(position, velocity, radius, mass, color = null, accn = null, wallCollisionFriction = null) {
         this.pos = position;
@@ -50,17 +8,18 @@ export class _2Dobject {
         this.radius = radius;
         this.color = color;
         this.ctx = _2Dobject.canvas.getContext('2d');
+        this.opacity = 0.1;
         this.accn = accn || _2Dobject.accn;
         this.wallCollisionFriction = wallCollisionFriction || _2Dobject._e;
     }
     draw() {
         this.ctx.beginPath();
         this.ctx.arc(this.pos.x, this.pos.y, this.radius, 0, _2PI, false);
-        if (this.color) {
-            this.ctx.fillStyle = this.color;
-            this.ctx.fill();
-        }
+        this.ctx.globalAlpha = this.opacity;
+        this.ctx.fillStyle = this.color;
+        this.ctx.strokeStyle = this.color;
         this.ctx.fill();
+        this.ctx.globalAlpha = 1;
         this.ctx.stroke();
     }
     update(deltatime) {
@@ -104,20 +63,64 @@ export class _2Dobject {
 _2Dobject.canvas = document.getElementById('c');
 _2Dobject.accn = new Vector(randint(-3, 3), randint(-3, 3)); //set class level or instance level
 _2Dobject._e = new Vector(1, 1); //coefficient of restituion, ratio of final velocity to initial velocity before collision
-function setBallsUniquePos() {
-    let canvas;
-    let balls = [];
-    let ballcount = 10;
+// coll2.html 
+let width, height;
+_2Dobject.canvas.width = window.innerWidth;
+_2Dobject.canvas.height = window.innerHeight;
+window.addEventListener("resize", () => {
+    _2Dobject.canvas.width = width = window.innerWidth;
+    _2Dobject.canvas.height = height = window.innerHeight;
+});
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+_2Dobject.canvas = canvas;
+const colors = [
+    "#FFB3BA", // pastel pink
+    "#FFDFBA", // pastel peach 
+    "#FFFFBA", // pastel yellow
+    "#BAFFC9", // pastel mint
+    "#BAE1FF", // pastel blue
+    "#E0BBE4", // pastel lavender
+    "#D5AAFF", // pastel violet
+    "#C2F0FC", // pastel cyan
+    "#FCE1E4", // pastel rose
+    "#D0F4DE" // pastel green
+];
+let lasttime = 0;
+let deltaTime = 0;
+let balls = [];
+const ballcount = 200;
+const radius = 10;
+function setup() {
     while (balls.length <= ballcount) {
-        let pos = new Vector(randint(30, canvas.width - 30), randint(30, canvas.height - 30));
-        //checking if current ball is colliding with any of present ball
+        let pos = new Vector(randint(radius, canvas.width - radius), randint(radius, canvas.height - radius));
         let BallsColliding = balls.some((ball) => {
             let centerDistance = Vector.distance(pos, ball.pos);
             return centerDistance < radius + ball.radius;
         });
         if (!BallsColliding) {
             let vel = new Vector(randint(-300, 300), randint(-300, 300));
-            balls.push(new _2Dobject(pos, vel, radius, 1, randomColor()));
+            balls.push(new _2Dobject(pos, vel, radius, 1, colors[randint(0, colors.length - 1)]));
         }
     }
 }
+function animate(timestamp) {
+    requestAnimationFrame(animate);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    deltaTime = (timestamp - lasttime) / 1000;
+    lasttime = timestamp;
+    for (let i = 0; i < balls.length; i++) {
+        let ball = balls[i];
+        ball.update(deltaTime);
+        ball.draw();
+        for (let j = i + 1; j < balls.length; j++) {
+            let anotherBall = balls[j];
+            const dist = Vector.distance(ball.pos, anotherBall.pos);
+            if (dist <= ball.radius + anotherBall.radius) {
+                _2Dobject.collisionResolution(ball, anotherBall);
+            }
+        }
+    }
+}
+setup();
+animate(0);
