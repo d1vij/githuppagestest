@@ -20,11 +20,11 @@ export class Vector {
         this.z = z
     }
 
-    public sub(b) {
+    public sub(b:Vector) {
         return new Vector(this.x - b.x, this.y - b.y)
     }
-    public amplitude() {
-        return Vector.angleBetween(this, new Vector(0, 0));
+    public angleMadeByThisVectorWithXAxisInRadians() {
+        return Math.atan2(this.y,this.x)
     }
     static rotateVector(oV: Vector, angle): Vector {
         let s = Math.sin(angle);
